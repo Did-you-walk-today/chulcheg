@@ -1,0 +1,45 @@
+import "server-only";
+import { and, desc, eq, gte } from "drizzle-orm";
+import { db } from "./db";
+import { attendanceLogs, users, type AttendanceLog, type User } from "./schema";
+import { getSessionUserId } from "./session";
+
+/** 현재 로그인 사용자 (없으면 null). */
+export async function getCurrentUser(): Promise<User | null> {
+  const uid = await getSessionUserId();
+  if (uid == null) return null;
+  const row = await db.select().from(users).where(eq(users.id, uid)).get();
+  return row ?? null;
+}
+
+/** 특정 사용자의 최근 로그 (기본 7일치, 시간 내림차순). */
+export async function getRecentLogs(
+  userId: number,
+  days = 7,
+): Promise<AttendanceLog[]> {
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  return db
+    .select()
+    .from(attendanceLogs)
+    .where(and(eq(attendanceLogs.userId, userId), gte(attendanceLogs.createdAt, since)))
+    .orderBy(desc(attendanceLogs.createdAt))
+    .all();
+}
+
+/** 전체 사용자 + 오늘 로그 (관리자 화면용). */
+export async function getAllUsersWithTodayLogs(): Promise<
+  { user: User; logs: AttendanceLog[] }[]
+> {
+  const allUsers = await db.select().from(users).orderBy(users.name).all();
+  const startOfToday = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // 넉넉히 2일
+  const logs = await db
+    .select()
+    .from(attendanceLogs)
+    .where(gte(attendanceLogs.createdAt, startOfToday))
+    .all();
+
+  return allUsers.map((user) => ({
+    user,
+    logs: logs.filter((l) => l.userId === user.id),
+  }));
+}

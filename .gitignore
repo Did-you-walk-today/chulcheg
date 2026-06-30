@@ -5,6 +5,14 @@ node_modules/
 .next/
 out/
 build/
+next-env.d.ts
+*.tsbuildinfo
+
+# local sqlite db
+local.db
+*.db
+*.db-shm
+*.db-wal
 
 # env
 .env
