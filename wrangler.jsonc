@@ -20,7 +20,7 @@
     {
       "binding": "DB",
       "database_name": "chulcheg-db",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "database_id": "fe360008-c65f-4bd5-b717-2f45493dba2b",
       "migrations_dir": "migrations"
     }
   ],
