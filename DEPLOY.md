@@ -79,8 +79,13 @@ npm run db:migrate:local   # 최초 1회 (WSL/mac/linux)
 npm run dev                # http://localhost:3000
 ```
 
-## 초기 관리자 계정
-- 로그인 ID(전화번호): `010-2166-5989`
-- 최초 비밀번호는 별도로 전달됨 → **로그인 후 `/settings` 에서 즉시 변경할 것.**
-- 관리자는 DB 레벨에서 **단 하나만** 존재하도록 강제된다(`uniq_single_admin`).
-- 관리자 전용 번호로는 일반 회원가입이 불가하다.
+## 관리자 계정 만들기 (코드 방식)
+- 하드코딩된 전화번호는 제거됨(공개 저장소 노출 방지).
+- **회원가입 화면에서 "관리자 코드" 를 입력하면** 그 계정이 관리자로 생성된다.
+- 코드 값은 소스가 아니라 secret 으로 관리:
+  ```bash
+  npx wrangler secret put ADMIN_SIGNUP_CODE   # 값 입력
+  ```
+  (로컬 개발은 `.dev.vars` 의 `ADMIN_SIGNUP_CODE`)
+- 관리자는 DB 레벨(`uniq_single_admin`) + 서버 로직 양쪽에서 **단 하나만** 존재하도록 강제.
+- 첫 관리자 생성 후에는 코드를 알아도 추가 관리자 생성 불가.

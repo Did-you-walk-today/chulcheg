@@ -49,6 +49,16 @@ export default async function RegisterPage({
             required
           />
         </div>
+        <div className="field">
+          <label htmlFor="code">관리자 코드 (선택)</label>
+          <input
+            id="code"
+            name="code"
+            type="password"
+            autoComplete="off"
+            placeholder="관리자로 가입할 때만 입력"
+          />
+        </div>
         <button className="btn" type="submit">
           가입하기
         </button>
