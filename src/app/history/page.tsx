@@ -37,9 +37,12 @@ export default async function HistoryPage() {
             <div className="log-date">{formatDate(dayLogs[0].createdAt)}</div>
             {dayLogs.map((log) => (
               <div className="log-item" key={log.id}>
-                <span className="type">
-                  {ACTION_LABEL[log.type as LogType] ?? log.type}
-                </span>
+                <div>
+                  <span className="type">
+                    {ACTION_LABEL[log.type as LogType] ?? log.type}
+                  </span>
+                  {log.reason && <div className="log-reason">사유: {log.reason}</div>}
+                </div>
                 <span className="time">{formatTime(log.createdAt)}</span>
               </div>
             ))}

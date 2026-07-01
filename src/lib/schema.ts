@@ -20,7 +20,8 @@ export const attendanceLogs = sqliteTable("attendance_logs", {
   userId: integer("user_id")
     .notNull()
     .references(() => users.id),
-  type: text("type").notNull(), // CLOCK_IN | CLOCK_OUT | STEP_OUT | RETURN
+  type: text("type").notNull(), // CLOCK_IN | CLOCK_OUT | STEP_OUT | RETURN | ABSENCE
+  reason: text("reason"), // 예외 사유 (외출 사유 / 미출근·결석 사유). 없으면 null.
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

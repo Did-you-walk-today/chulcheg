@@ -29,7 +29,14 @@ export interface ReportData {
   refDate: string;
   days: string[];
   users: UserReport[];
-  detailRows: { day: string; time: string; name: string; phone: string; type: string }[];
+  detailRows: {
+    day: string;
+    time: string;
+    name: string;
+    phone: string;
+    type: string;
+    reason: string;
+  }[];
 }
 
 // ── 날짜 유틸 (Asia/Seoul, UTC+9 고정) ────────────────────────────────
@@ -134,6 +141,7 @@ export async function buildReport(period: Period, refDate: string): Promise<Repo
         name: u?.name ?? "-",
         phone: u ? formatPhone(u.phone) : "-",
         type: ACTION_LABEL[log.type as LogType] ?? log.type,
+        reason: log.reason ?? "",
       };
     });
 
@@ -175,8 +183,15 @@ export function summaryAoa(report: ReportData): (string | number)[][] {
 }
 
 export function detailAoa(report: ReportData): (string | number)[][] {
-  const header = ["날짜", "시각", "이름", "전화번호", "유형"];
-  const rows = report.detailRows.map((d) => [d.day, d.time, d.name, d.phone, d.type]);
+  const header = ["날짜", "시각", "이름", "전화번호", "유형", "사유"];
+  const rows = report.detailRows.map((d) => [
+    d.day,
+    d.time,
+    d.name,
+    d.phone,
+    d.type,
+    d.reason,
+  ]);
   return [header, ...rows];
 }
 

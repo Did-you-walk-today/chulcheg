@@ -160,6 +160,39 @@ h1 {
   padding: 24px 0;
 }
 
+/* 사유 입력 */
+.reason-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.reason-input {
+  width: 100%;
+  padding: 15px 16px;
+  font-size: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+.reason-input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+.reason-note {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 4px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+.log-reason {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 4px;
+  word-break: break-word;
+}
+
 .bottom-nav {
   display: flex;
   flex-wrap: wrap;

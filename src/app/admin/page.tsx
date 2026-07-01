@@ -37,6 +37,7 @@ export default async function AdminPage() {
           const today = todaysLogs(logs);
           const state = deriveState(today);
           const last = today[today.length - 1];
+          const reason = [...today].reverse().find((l) => l.reason)?.reason;
           return (
             <div className="log-item" key={user.id}>
               <div>
@@ -48,6 +49,7 @@ export default async function AdminPage() {
                       last.createdAt,
                     )}`}
                 </div>
+                {reason && <div className="log-reason">사유: {reason}</div>}
               </div>
               <span className={`pill pill-${state}`}>{STATE_LABEL[state]}</span>
             </div>

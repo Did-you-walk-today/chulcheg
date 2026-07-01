@@ -2,9 +2,17 @@ import type { AttendanceLog } from "./schema";
 
 // 출퇴근 상태 머신 (기획서 4.3).
 
-export type LogType = "CLOCK_IN" | "CLOCK_OUT" | "STEP_OUT" | "RETURN";
+// ABSENCE 는 상태를 바꾸지 않는 "사유 신고" 로그다 (미출근·결석 사유).
+export type LogType =
+  | "CLOCK_IN"
+  | "CLOCK_OUT"
+  | "STEP_OUT"
+  | "RETURN"
+  | "ABSENCE";
 export type State = "OFF" | "WORKING" | "OUT" | "DONE";
 //                    미출근    근무중      외출중   퇴근
+
+const STATE_TYPES: LogType[] = ["CLOCK_IN", "CLOCK_OUT", "STEP_OUT", "RETURN"];
 
 export const STATE_LABEL: Record<State, string> = {
   OFF: "미출근",
@@ -18,23 +26,25 @@ export const ACTION_LABEL: Record<LogType, string> = {
   STEP_OUT: "외출",
   RETURN: "복귀",
   CLOCK_OUT: "퇴근",
+  ABSENCE: "미출근 사유",
 };
 
-/** 당일 로그(시간 오름차순)로부터 현재 상태를 도출. */
+/** 당일 로그(시간 오름차순)로부터 현재 상태를 도출. ABSENCE 등 비상태 로그는 무시. */
 export function deriveState(todaysLogs: AttendanceLog[]): State {
-  if (todaysLogs.length === 0) return "OFF";
-  const last = todaysLogs[todaysLogs.length - 1].type as LogType;
-  switch (last) {
-    case "CLOCK_IN":
-    case "RETURN":
-      return "WORKING";
-    case "STEP_OUT":
-      return "OUT";
-    case "CLOCK_OUT":
-      return "DONE";
-    default:
-      return "OFF";
+  for (let i = todaysLogs.length - 1; i >= 0; i--) {
+    const t = todaysLogs[i].type as LogType;
+    if (!STATE_TYPES.includes(t)) continue;
+    switch (t) {
+      case "CLOCK_IN":
+      case "RETURN":
+        return "WORKING";
+      case "STEP_OUT":
+        return "OUT";
+      case "CLOCK_OUT":
+        return "DONE";
+    }
   }
+  return "OFF";
 }
 
 /** 현재 상태에서 노출/허용할 액션 목록. (UI 버튼 + 서버 검증 공용) */
