@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getCurrentUser, getRecentLogs } from "@/lib/queries";
 import {
   ACTION_LABEL,
@@ -9,7 +8,8 @@ import {
   todaysLogs,
 } from "@/lib/attendance";
 import { formatTime } from "@/lib/format";
-import { recordAction, logout } from "./actions";
+import { recordAction } from "./actions";
+import { HeaderMenu } from "./HeaderMenu";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export default async function DashboardPage() {
     <>
       <div className="topbar">
         <span className="brand">출석 체크</span>
-        <Link href="/history">기록 보기</Link>
+        <HeaderMenu isAdmin={user.role === "admin"} />
       </div>
 
       <h1>{user.name}님</h1>
@@ -73,18 +73,6 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <nav className="bottom-nav">
-        <Link href="/history">내 기록</Link>
-        <Link href="/settings">비밀번호 변경</Link>
-        {user.role === "admin" && <Link href="/admin">관리자</Link>}
-        {user.role === "admin" && <Link href="/admin/report">보고서</Link>}
-      </nav>
-
-      <form action={logout}>
-        <button className="btn btn-ghost" type="submit" style={{ marginTop: 12 }}>
-          로그아웃
-        </button>
-      </form>
     </>
   );
 }
