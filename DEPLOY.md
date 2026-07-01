@@ -46,9 +46,32 @@ npx wrangler secret put SESSION_SECRET
 비워두면 IP 검사 없이 전부 통과(개발). 값을 넣으면 자동으로 학교망 외부 차단.
 
 ## 5. 배포
+
+### 방법 A — GitHub 연동 (Workers Builds) ★ 권장
+Windows 로컬 빌드 문제(OpenNext 세그폴트)를 우회한다. 실제 빌드는 Cloudflare 리눅스에서 실행.
+
+**사전(로컬 Windows 에서 가능 — 아래 명령은 workerd 번들링이 아니라 API 호출이라 정상 동작):**
+1. `npx wrangler login`
+2. `npx wrangler d1 create chulcheg-db` → 나온 `database_id` 를 `wrangler.jsonc` 에 붙여넣고 커밋/푸시
+3. `npm run db:migrate:remote` (원격 D1 에 테이블 + 관리자 시드 적용)
+
+**Cloudflare 대시보드:**
+4. Workers & Pages → Create → **Workers** → **Connect to Git** → `Did-you-walk-today/chulcheg` 선택
+5. 빌드 설정:
+   - **Build command**: `npx opennextjs-cloudflare build`
+   - **Deploy command**: `npx wrangler deploy` (기본값 그대로)
+   - Root directory: `/` (기본)
+6. 저장하면 첫 빌드/배포 진행. 이후 `main` 에 push 할 때마다 자동 재배포.
+7. 배포된 Worker → Settings → **Variables and Secrets** 에서 `SESSION_SECRET` 을 Secret 으로 추가
+   (또는 로컬에서 `npx wrangler secret put SESSION_SECRET`).
+
+> 이후 학교 IP 를 넣을 때는 `wrangler.jsonc` 의 `vars.ALLOWED_IPS` 만 고쳐서 push → 자동 재배포.
+
+### 방법 B — 로컬에서 직접 배포 (WSL / mac / linux)
 ```bash
-npm run deploy
+npm run deploy   # opennextjs-cloudflare build && wrangler deploy
 ```
+(Windows 네이티브에서는 이 빌드가 세그폴트로 실패하므로 방법 A 를 쓸 것.)
 
 ## 로컬 개발
 ```bash
