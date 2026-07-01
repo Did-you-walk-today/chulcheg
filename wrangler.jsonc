@@ -1,0 +1,37 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "chulcheg",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+
+  // ── D1 (SQLite) 바인딩 ─────────────────────────────────────────────
+  // 배포 전에 반드시:
+  //   1) wrangler d1 create chulcheg-db   → 출력된 database_id 를 아래에 붙여넣기
+  //   2) npm run db:migrate:remote        → 원격 D1 에 테이블 + 관리자 시드 적용
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "chulcheg-db",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // ── 환경 변수 ─────────────────────────────────────────────────────
+  // 학교 IP 범위 전체를 여기에 넣으면 자동으로 접속 제어가 켜진다.
+  // (비워두면 통과 = 개발 상태). CIDR / 여러 대역 / IPv6 지원.
+  "vars": {
+    "ALLOWED_IPS": "",
+    "IP_CHECK_DISABLED": "false"
+  }
+  // SESSION_SECRET 은 값이 민감하므로 vars 가 아니라 secret 으로 등록:
+  //   wrangler secret put SESSION_SECRET
+}

@@ -6,24 +6,28 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "cf:typegen": "wrangler types",
+    "cf:build": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "db:migrate:local": "wrangler d1 migrations apply chulcheg-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply chulcheg-db --remote"
   },
   "dependencies": {
     "next": "^15.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "drizzle-orm": "^0.38.3",
-    "better-sqlite3": "^11.8.1"
+    "xlsx": "^0.18.5",
+    "@opennextjs/cloudflare": "^1.0.0"
   },
   "devDependencies": {
     "typescript": "^5.7.3",
     "@types/node": "^22.10.7",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
-    "@types/better-sqlite3": "^7.6.12",
-    "drizzle-kit": "^0.30.2"
+    "@cloudflare/workers-types": "^4.20250101.0",
+    "wrangler": "^4.86.0"
   }
 }

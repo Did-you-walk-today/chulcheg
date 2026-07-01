@@ -2,11 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { hashPassword, verifyPassword } from "@/lib/auth";
 import { createSession } from "@/lib/session";
 import { isValidPhone, normalizePhone } from "@/lib/phone";
+import { ADMIN_PHONE } from "@/lib/config";
 
 function fail(path: string, message: string): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
@@ -18,6 +19,7 @@ export async function login(formData: FormData): Promise<void> {
 
   if (!phone || !password) fail("/login", "전화번호와 비밀번호를 입력하세요.");
 
+  const db = getDb();
   const user = await db.select().from(users).where(eq(users.phone, phone)).get();
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     fail("/login", "전화번호 또는 비밀번호가 올바르지 않습니다.");
@@ -38,10 +40,15 @@ export async function register(formData: FormData): Promise<void> {
   if (!isValidPhone(phone)) {
     fail("/register", "전화번호 형식이 올바르지 않습니다. (예: 010-0000-0000)");
   }
+  // 관리자 전용 번호는 일반 회원가입 불가 (관리자는 시드로만 생성).
+  if (phone === ADMIN_PHONE) {
+    fail("/register", "해당 번호로는 가입할 수 없습니다.");
+  }
   if (password.length < 4) {
     fail("/register", "비밀번호는 4자 이상으로 설정하세요.");
   }
 
+  const db = getDb();
   const existing = await db
     .select()
     .from(users)
@@ -52,9 +59,10 @@ export async function register(formData: FormData): Promise<void> {
   }
 
   const passwordHash = await hashPassword(password);
+  // role 은 항상 'user'. 관리자 권한은 회원가입 경로로 부여될 수 없다.
   const inserted = await db
     .insert(users)
-    .values({ name, phone, passwordHash })
+    .values({ name, phone, passwordHash, role: "user" })
     .returning({ id: users.id })
     .get();
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { attendanceLogs } from "@/lib/schema";
 import { getCurrentUser, getRecentLogs } from "@/lib/queries";
 import {
@@ -31,6 +31,7 @@ export async function recordAction(formData: FormData): Promise<void> {
     return;
   }
 
+  const db = getDb();
   await db.insert(attendanceLogs).values({ userId: user.id, type });
   revalidatePath("/");
   revalidatePath("/history");

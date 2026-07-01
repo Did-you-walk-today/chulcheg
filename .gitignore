@@ -18,10 +18,12 @@ local.db
 .env
 .env.local
 .env*.local
+.dev.vars
 
 # cloudflare
 .wrangler/
 .open-next/
+worker-configuration.d.ts
 
 # misc
 .DS_Store

@@ -73,6 +73,13 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      <nav className="bottom-nav">
+        <Link href="/history">내 기록</Link>
+        <Link href="/settings">비밀번호 변경</Link>
+        {user.role === "admin" && <Link href="/admin">관리자</Link>}
+        {user.role === "admin" && <Link href="/admin/report">보고서</Link>}
+      </nav>
+
       <form action={logout}>
         <button className="btn btn-ghost" type="submit" style={{ marginTop: 12 }}>
           로그아웃

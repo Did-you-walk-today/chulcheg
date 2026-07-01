@@ -1,6 +1,6 @@
 import "server-only";
 import { and, desc, eq, gte } from "drizzle-orm";
-import { db } from "./db";
+import { getDb } from "./db";
 import { attendanceLogs, users, type AttendanceLog, type User } from "./schema";
 import { getSessionUserId } from "./session";
 
@@ -8,6 +8,7 @@ import { getSessionUserId } from "./session";
 export async function getCurrentUser(): Promise<User | null> {
   const uid = await getSessionUserId();
   if (uid == null) return null;
+  const db = getDb();
   const row = await db.select().from(users).where(eq(users.id, uid)).get();
   return row ?? null;
 }
@@ -17,6 +18,7 @@ export async function getRecentLogs(
   userId: number,
   days = 7,
 ): Promise<AttendanceLog[]> {
+  const db = getDb();
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   return db
     .select()
@@ -30,6 +32,7 @@ export async function getRecentLogs(
 export async function getAllUsersWithTodayLogs(): Promise<
   { user: User; logs: AttendanceLog[] }[]
 > {
+  const db = getDb();
   const allUsers = await db.select().from(users).orderBy(users.name).all();
   const startOfToday = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // 넉넉히 2일
   const logs = await db
