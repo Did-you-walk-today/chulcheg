@@ -28,7 +28,7 @@ export default async function DashboardPage() {
   return (
     <>
       <div className="topbar">
-        <span className="brand">출석 체크</span>
+        <span className="brand">나왔니</span>
         <HeaderMenu isAdmin={user.role === "admin"} />
       </div>
 

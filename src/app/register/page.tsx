@@ -14,7 +14,7 @@ export default async function RegisterPage({
 
   return (
     <>
-      <span className="brand">출석 체크</span>
+      <span className="brand">나왔니</span>
       <h1>회원가입</h1>
       <p className="subtitle">학교 와이파이에 연결된 상태에서만 가입할 수 있어요.</p>
 

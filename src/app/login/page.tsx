@@ -14,7 +14,7 @@ export default async function LoginPage({
 
   return (
     <>
-      <span className="brand">출석 체크</span>
+      <span className="brand">나왔니</span>
       <h1>로그인</h1>
       <p className="subtitle">전화번호와 비밀번호로 로그인하세요.</p>
 
