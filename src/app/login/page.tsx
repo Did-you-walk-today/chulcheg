@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/queries";
-import { login } from "../auth-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +20,7 @@ export default async function LoginPage({
 
       {error && <div className="error">{error}</div>}
 
-      <form className="form" action={login}>
+      <form className="form" method="post" action="/api/login">
         <div className="field">
           <label htmlFor="phone">전화번호</label>
           <input

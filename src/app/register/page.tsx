@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/queries";
-import { register } from "../auth-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +20,7 @@ export default async function RegisterPage({
 
       {error && <div className="error">{error}</div>}
 
-      <form className="form" action={register}>
+      <form className="form" method="post" action="/api/register">
         <div className="field">
           <label htmlFor="name">이름</label>
           <input id="name" name="name" type="text" maxLength={20} required />

@@ -11,7 +11,6 @@ import {
   todaysLogs,
   type LogType,
 } from "@/lib/attendance";
-import { destroySession } from "@/lib/session";
 
 const VALID: LogType[] = [
   "CLOCK_IN",
@@ -61,9 +60,4 @@ export async function recordAction(formData: FormData): Promise<void> {
     .values({ userId: user.id, type, reason: savedReason });
   revalidatePath("/");
   revalidatePath("/history");
-}
-
-export async function logout(): Promise<void> {
-  await destroySession();
-  redirect("/login");
 }

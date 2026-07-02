@@ -4,10 +4,18 @@ import { cookies } from "next/headers";
 // 가벼운 자체 세션: 서명된 쿠키. 외부 서비스 없이 HMAC-SHA256 으로 위조 방지.
 // 토큰 포맷: base64url(payloadJson).base64url(hmac)
 
-const COOKIE_NAME = "session";
-const MAX_AGE_SEC = 60 * 60 * 24 * 30; // 30일
+export const SESSION_COOKIE = "session";
+export const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30일
+const COOKIE_NAME = SESSION_COOKIE;
+const MAX_AGE_SEC = SESSION_MAX_AGE;
 
 type SessionPayload = { uid: number; exp: number };
+
+/** 로그인 세션 토큰 문자열 생성. (Route Handler 에서 NextResponse 쿠키에 실을 때 사용) */
+export async function createSessionToken(userId: number): Promise<string> {
+  const exp = Math.floor(Date.now() / 1000) + MAX_AGE_SEC;
+  return sign({ uid: userId, exp });
+}
 
 function b64urlEncode(bytes: Uint8Array): string {
   let bin = "";

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { logout } from "./actions";
 
 // 우상단 메뉴 버튼. 내 기록 / 비밀번호 변경 / (관리자) / 로그아웃을 드롭다운에 모음.
 export function HeaderMenu({ isAdmin }: { isAdmin: boolean }) {
@@ -64,7 +63,7 @@ export function HeaderMenu({ isAdmin }: { isAdmin: boolean }) {
             </Link>
           )}
           <div className="menu-sep" />
-          <form action={logout}>
+          <form method="post" action="/api/logout">
             <button type="submit" className="menu-item menu-item-danger" role="menuitem">
               로그아웃
             </button>
