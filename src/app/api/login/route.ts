@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { verifyPassword } from "@/lib/auth";
-import { createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from "@/lib/session";
+import { createSessionToken, SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
 import { normalizePhone } from "@/lib/phone";
 
 export const dynamic = "force-dynamic";
@@ -29,12 +29,6 @@ export async function POST(req: NextRequest) {
 
   const token = await createSessionToken(user.id);
   const res = NextResponse.redirect(new URL("/", req.url), 303);
-  res.cookies.set(SESSION_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: SESSION_MAX_AGE,
-  });
+  res.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(req.nextUrl.hostname));
   return res;
 }

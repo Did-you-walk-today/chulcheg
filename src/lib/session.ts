@@ -17,6 +17,26 @@ export async function createSessionToken(userId: number): Promise<string> {
   return sign({ uid: userId, exp });
 }
 
+/**
+ * 세션 쿠키 옵션. COOKIE_DOMAIN(env) 이 설정돼 있고 현재 호스트가 그 도메인(또는
+ * 하위 도메인)이면 Domain 을 명시해서 apex/www/서브도메인 전체에서 세션을 공유한다.
+ * localhost / *.workers.dev 등에서는 Domain 을 붙이지 않아 host-only 로 동작(호환).
+ */
+export function sessionCookieOptions(hostname: string, maxAge: number = MAX_AGE_SEC) {
+  const configured = process.env.COOKIE_DOMAIN?.trim();
+  const useDomain =
+    configured &&
+    (hostname === configured || hostname.endsWith("." + configured));
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge,
+    ...(useDomain ? { domain: configured } : {}),
+  };
+}
+
 function b64urlEncode(bytes: Uint8Array): string {
   let bin = "";
   for (const b of bytes) bin += String.fromCharCode(b);
