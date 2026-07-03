@@ -30,9 +30,7 @@
   // (비워두면 통과 = 개발 상태). CIDR / 여러 대역 / IPv6 지원.
   "vars": {
     "ALLOWED_IPS": "",
-    "IP_CHECK_DISABLED": "false",
-    // 세션 쿠키를 mypreznt.com 전체(apex/www/서브도메인)에서 공유 → 호스트 이동 시 로그인 유지
-    "COOKIE_DOMAIN": "mypreznt.com"
+    "IP_CHECK_DISABLED": "false"
   }
   // SESSION_SECRET 은 값이 민감하므로 vars 가 아니라 secret 으로 등록:
   //   wrangler secret put SESSION_SECRET
