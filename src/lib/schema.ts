@@ -27,5 +27,18 @@ export const attendanceLogs = sqliteTable("attendance_logs", {
     .default(sql`(unixepoch())`),
 });
 
+// 서버 세션. 쿠키엔 랜덤 id 만 담고, 실제 세션은 이 테이블로 관리(위조 불가 + 서버 폐기 가능).
+export const sessions = sqliteTable("sessions", {
+  id: text("id").primaryKey(), // 랜덤 불투명 토큰
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
+
 export type User = typeof users.$inferSelect;
 export type AttendanceLog = typeof attendanceLogs.$inferSelect;
+export type Session = typeof sessions.$inferSelect;

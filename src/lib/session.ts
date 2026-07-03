@@ -1,102 +1,62 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { eq } from "drizzle-orm";
+import { getDb } from "./db";
+import { sessions } from "./schema";
 
-// 가벼운 자체 세션: 서명된 쿠키. 외부 서비스 없이 HMAC-SHA256 으로 위조 방지.
-// 토큰 포맷: base64url(payloadJson).base64url(hmac)
+// 서버 세션. 쿠키엔 랜덤 id(sid)만 담고, 세션 진위는 D1 의 sessions 테이블로 판단.
+// 서명 secret 의존이 없어서 secret 변경/옛 쿠키로 인한 무효화·충돌 문제가 없다.
 
-export const SESSION_COOKIE = "session";
+export const SESSION_COOKIE = "sid";
 export const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30일
-const COOKIE_NAME = SESSION_COOKIE;
-const MAX_AGE_SEC = SESSION_MAX_AGE;
 
-type SessionPayload = { uid: number; exp: number };
-
-/** 로그인 세션 토큰 문자열 생성. (Route Handler 에서 NextResponse 쿠키에 실을 때 사용) */
-export async function createSessionToken(userId: number): Promise<string> {
-  const exp = Math.floor(Date.now() / 1000) + MAX_AGE_SEC;
-  return sign({ uid: userId, exp });
+function newSessionId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  let s = "";
+  for (const b of bytes) s += b.toString(16).padStart(2, "0");
+  return s;
 }
 
-function b64urlEncode(bytes: Uint8Array): string {
-  let bin = "";
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-function b64urlDecode(s: string): Uint8Array {
-  const pad = s.length % 4 === 0 ? "" : "=".repeat(4 - (s.length % 4));
-  const bin = atob(s.replace(/-/g, "+").replace(/_/g, "/") + pad);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
-
-async function hmac(data: string): Promise<Uint8Array> {
-  const secret = process.env.SESSION_SECRET ?? "dev-insecure-secret";
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(secret) as BufferSource,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data) as BufferSource);
-  return new Uint8Array(sig);
-}
-
-async function sign(payload: SessionPayload): Promise<string> {
-  const body = b64urlEncode(new TextEncoder().encode(JSON.stringify(payload)));
-  const sig = b64urlEncode(await hmac(body));
-  return `${body}.${sig}`;
-}
-
-async function verify(token: string): Promise<SessionPayload | null> {
-  const [body, sig] = token.split(".");
-  if (!body || !sig) return null;
-  const expected = b64urlEncode(await hmac(body));
-  if (!timingSafeEqual(sig, expected)) return null;
-  try {
-    const payload = JSON.parse(
-      new TextDecoder().decode(b64urlDecode(body)),
-    ) as SessionPayload;
-    if (typeof payload.uid !== "number" || typeof payload.exp !== "number") return null;
-    if (payload.exp < Math.floor(Date.now() / 1000)) return null;
-    return payload;
-  } catch {
-    return null;
-  }
-}
-
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
-}
-
-export async function createSession(userId: number): Promise<void> {
-  const exp = Math.floor(Date.now() / 1000) + MAX_AGE_SEC;
-  const token = await sign({ uid: userId, exp });
-  const store = await cookies();
-  store.set(COOKIE_NAME, token, {
+/** 세션 쿠키 옵션. host-only(도메인 미지정) — 새 로그인이 항상 옛 쿠키를 덮어씀. */
+export function sessionCookieOptions(maxAge: number = SESSION_MAX_AGE) {
+  return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "lax" as const,
     path: "/",
-    maxAge: MAX_AGE_SEC,
-  });
+    maxAge,
+  };
 }
 
+/** DB 에 세션 레코드를 만들고 sid 를 반환. (Route Handler 에서 쿠키에 실음) */
+export async function createSessionRecord(userId: number): Promise<string> {
+  const db = getDb();
+  const id = newSessionId();
+  const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000);
+  await db.insert(sessions).values({ id, userId, expiresAt });
+  return id;
+}
+
+/** 현재 쿠키의 sid 로 세션을 조회해 userId 반환. 만료되면 삭제하고 null. */
 export async function getSessionUserId(): Promise<number | null> {
   const store = await cookies();
-  const token = store.get(COOKIE_NAME)?.value;
-  if (!token) return null;
-  const payload = await verify(token);
-  return payload?.uid ?? null;
+  const sid = store.get(SESSION_COOKIE)?.value;
+  if (!sid) return null;
+
+  const db = getDb();
+  const row = await db.select().from(sessions).where(eq(sessions.id, sid)).get();
+  if (!row) return null;
+
+  if (row.expiresAt.getTime() < Date.now()) {
+    await db.delete(sessions).where(eq(sessions.id, sid));
+    return null;
+  }
+  return row.userId;
 }
 
-export async function destroySession(): Promise<void> {
-  const store = await cookies();
-  store.delete(COOKIE_NAME);
+/** 세션 폐기(로그아웃). DB 레코드 삭제. */
+export async function destroySessionById(sid: string | undefined | null): Promise<void> {
+  if (!sid) return;
+  const db = getDb();
+  await db.delete(sessions).where(eq(sessions.id, sid));
 }
