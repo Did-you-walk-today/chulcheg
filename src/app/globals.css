@@ -55,6 +55,25 @@ body {
   margin-bottom: 8px;
 }
 
+/* 로그인/가입 상단 대형 브랜드 (로그인 제목보다 크게) */
+.brand-hero {
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+
+/* 정보 수집 고지 */
+.collect-note {
+  margin-top: 20px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  text-align: center;
+}
+
 h1 {
   font-size: 24px;
   font-weight: 800;
@@ -395,6 +414,21 @@ h1 {
   color: var(--text-muted);
   text-align: center;
   padding: 40px 0;
+}
+
+/* 이벤트 로그 레벨 */
+.log-level {
+  font-weight: 700;
+  font-size: 12px;
+}
+.log-info {
+  color: #4ade80;
+}
+.log-warn {
+  color: #fbbf24;
+}
+.log-error {
+  color: #f87171;
 }
 
 /* 보고서 */

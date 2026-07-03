@@ -39,6 +39,31 @@ export const sessions = sqliteTable("sessions", {
     .default(sql`(unixepoch())`),
 });
 
+// 진단용 이벤트 로그. 로그인 성공/실패·세션 이상 등을 기기 정보와 함께 남긴다.
+export const eventLog = sqliteTable("event_log", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  level: text("level").notNull(), // info | warn | error
+  event: text("event").notNull(), // login_ok | login_fail | session_invalid | ...
+  message: text("message"),
+  path: text("path"),
+  status: integer("status"),
+  host: text("host"),
+  ip: text("ip"),
+  country: text("country"),
+  isp: text("isp"),
+  browser: text("browser"),
+  browserVer: text("browser_ver"),
+  os: text("os"),
+  osVer: text("os_ver"),
+  isMobile: integer("is_mobile", { mode: "boolean" }),
+  hadSid: integer("had_sid", { mode: "boolean" }),
+  userId: integer("user_id"),
+});
+
 export type User = typeof users.$inferSelect;
 export type AttendanceLog = typeof attendanceLogs.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
+export type EventLog = typeof eventLog.$inferSelect;

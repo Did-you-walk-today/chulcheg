@@ -62,6 +62,11 @@ export function HeaderMenu({ isAdmin }: { isAdmin: boolean }) {
               출석 보고서
             </Link>
           )}
+          {isAdmin && (
+            <Link href="/admin/logs" className="menu-item" role="menuitem" onClick={close}>
+              이벤트 로그
+            </Link>
+          )}
           <div className="menu-sep" />
           <form method="post" action="/api/logout">
             <button type="submit" className="menu-item menu-item-danger" role="menuitem">

@@ -5,6 +5,7 @@ import { users } from "@/lib/schema";
 import { verifyPassword } from "@/lib/auth";
 import { createSessionRecord, SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
 import { normalizePhone } from "@/lib/phone";
+import { logEvent } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +14,13 @@ export async function POST(req: NextRequest) {
   const phone = normalizePhone(String(form.get("phone") ?? ""));
   const password = String(form.get("password") ?? "");
 
-  const fail = (msg: string) =>
-    NextResponse.redirect(
+  const fail = async (msg: string) => {
+    await logEvent({ level: "warn", event: "login_fail", message: msg, path: "/api/login", status: 303 });
+    return NextResponse.redirect(
       new URL(`/login?error=${encodeURIComponent(msg)}`, req.url),
       303,
     );
+  };
 
   if (!phone || !password) return fail("전화번호와 비밀번호를 입력하세요.");
 
@@ -28,6 +31,7 @@ export async function POST(req: NextRequest) {
   }
 
   const sid = await createSessionRecord(user.id);
+  await logEvent({ level: "info", event: "login_ok", path: "/api/login", userId: user.id });
   const res = NextResponse.redirect(new URL("/", req.url), 303);
   res.cookies.set(SESSION_COOKIE, sid, sessionCookieOptions());
   return res;

@@ -5,6 +5,7 @@ import { users } from "@/lib/schema";
 import { hashPassword } from "@/lib/auth";
 import { createSessionRecord, SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
 import { isValidPhone, normalizePhone } from "@/lib/phone";
+import { logEvent } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 
@@ -19,11 +20,13 @@ export async function POST(req: NextRequest) {
   const password = String(form.get("password") ?? "");
   const code = normalizeCode(String(form.get("code") ?? ""));
 
-  const fail = (msg: string) =>
-    NextResponse.redirect(
+  const fail = async (msg: string) => {
+    await logEvent({ level: "warn", event: "register_fail", message: msg, path: "/api/register", status: 303 });
+    return NextResponse.redirect(
       new URL(`/register?error=${encodeURIComponent(msg)}`, req.url),
       303,
     );
+  };
 
   if (name.length < 1 || name.length > 20) return fail("이름은 1~20자로 입력하세요.");
   if (!isValidPhone(phone)) {
@@ -57,6 +60,7 @@ export async function POST(req: NextRequest) {
     .get();
 
   const sid = await createSessionRecord(inserted.id);
+  await logEvent({ level: "info", event: "register_ok", path: "/api/register", userId: inserted.id });
   const res = NextResponse.redirect(new URL("/", req.url), 303);
   res.cookies.set(SESSION_COOKIE, sid, sessionCookieOptions());
   return res;

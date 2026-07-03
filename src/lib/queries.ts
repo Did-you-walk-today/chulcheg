@@ -1,13 +1,22 @@
 import "server-only";
+import { cookies } from "next/headers";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { getDb } from "./db";
 import { attendanceLogs, users, type AttendanceLog, type User } from "./schema";
-import { getSessionUserId } from "./session";
+import { getSessionUserId, SESSION_COOKIE } from "./session";
+import { logEvent } from "./log";
 
 /** 현재 로그인 사용자 (없으면 null). */
 export async function getCurrentUser(): Promise<User | null> {
   const uid = await getSessionUserId();
-  if (uid == null) return null;
+  if (uid == null) {
+    // sid 쿠키는 있는데 세션이 없다 = 세션 이상(로그인 튕김의 핵심 신호). 진단용 기록.
+    const store = await cookies();
+    if (store.get(SESSION_COOKIE)?.value) {
+      await logEvent({ level: "warn", event: "session_invalid" });
+    }
+    return null;
+  }
   const db = getDb();
   const row = await db.select().from(users).where(eq(users.id, uid)).get();
   return row ?? null;

@@ -14,7 +14,7 @@ export default async function LoginPage({
 
   return (
     <>
-      <span className="brand">나왔니</span>
+      <div className="brand-hero">나왔니</div>
       <h1>로그인</h1>
       <p className="subtitle">전화번호와 비밀번호로 로그인하세요.</p>
 
@@ -50,6 +50,11 @@ export default async function LoginPage({
 
       <p className="muted-link">
         아직 계정이 없나요? <Link href="/register">회원가입</Link>
+      </p>
+
+      <p className="collect-note">
+        원활한 서비스 제공과 버그 해결을 위해 접속 시 기기·브라우저·IP 등 일부
+        정보가 수집됩니다.
       </p>
     </>
   );
