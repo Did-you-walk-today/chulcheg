@@ -62,5 +62,5 @@ export async function POST(req: NextRequest) {
 
   const sid = await createSessionRecord(inserted.id);
   await logEvent({ level: "info", event: "register_ok", path: "/api/register", userId: inserted.id });
-  return loginLandingResponse(sid, "/");
+  return loginLandingResponse(sid);
 }

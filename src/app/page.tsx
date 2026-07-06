@@ -9,12 +9,24 @@ import {
 import { formatTime } from "@/lib/format";
 import { recordAction } from "./actions";
 import { HeaderMenu } from "./HeaderMenu";
+import { logEvent } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ li?: string }>;
+}) {
+  const { li } = await searchParams;
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    // 방금 로그인 성공(li=1)했는데 세션이 없다 = 쿠키가 저장/전송되지 않은 튕김.
+    if (li) {
+      await logEvent({ level: "error", event: "post_login_bounce", path: "/" });
+    }
+    redirect("/login");
+  }
 
   const logs = await getRecentLogs(user.id, 2);
   const today = todaysLogs(logs);

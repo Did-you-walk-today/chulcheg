@@ -18,6 +18,18 @@ function getClientIp(req: NextRequest): string | null {
 }
 
 export function middleware(req: NextRequest) {
+  // http 로 들어온 요청은 https 로 강제한다.
+  // 세션 쿠키가 Secure 라서 http 페이지에서는 저장되지 않아 로그인이 무한 반복된다.
+  // (카카오톡 등 인앱 브라우저가 스킴 없는 링크를 http:// 로 여는 것이 실제 사고 원인)
+  const visitor = req.headers.get("cf-visitor"); // 예: {"scheme":"http"}
+  const proto = req.headers.get("x-forwarded-proto");
+  if (visitor?.includes('"scheme":"http"') || proto === "http") {
+    const url = req.nextUrl.clone();
+    url.protocol = "https:";
+    url.port = "";
+    return NextResponse.redirect(url, 301);
+  }
+
   const allowList = parseAllowList(process.env.ALLOWED_IPS);
   const disabled = process.env.IP_CHECK_DISABLED === "true";
 
