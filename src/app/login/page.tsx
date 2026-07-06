@@ -7,10 +7,10 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; reset?: string }>;
 }) {
   if (await getCurrentUser()) redirect("/");
-  const { error } = await searchParams;
+  const { error, reset } = await searchParams;
 
   return (
     <>
@@ -18,6 +18,7 @@ export default async function LoginPage({
       <h1>로그인</h1>
       <p className="subtitle">전화번호와 비밀번호로 로그인하세요.</p>
 
+      {reset && <div className="toast">비밀번호가 재설정되었습니다. 새 비밀번호로 로그인하세요. ✅</div>}
       {error && <div className="error">{error}</div>}
 
       <form className="form" method="post" action="/api/login">
@@ -50,6 +51,8 @@ export default async function LoginPage({
 
       <p className="muted-link">
         아직 계정이 없나요? <Link href="/register">회원가입</Link>
+        <br />
+        비밀번호를 잊었나요? <Link href="/reset">비밀번호 재설정</Link>
       </p>
 
       <p className="collect-note">

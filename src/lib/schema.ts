@@ -61,6 +61,7 @@ export const eventLog = sqliteTable("event_log", {
   isMobile: integer("is_mobile", { mode: "boolean" }),
   hadSid: integer("had_sid", { mode: "boolean" }),
   userId: integer("user_id"),
+  ua: text("ua"), // 원본 User-Agent (인앱 브라우저 식별용)
 });
 
 export type User = typeof users.$inferSelect;

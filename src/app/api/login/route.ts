@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { verifyPassword } from "@/lib/auth";
-import { createSessionRecord, SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
+import { createSessionRecord } from "@/lib/session";
+import { loginLandingResponse } from "@/lib/authResponse";
 import { normalizePhone } from "@/lib/phone";
 import { logEvent } from "@/lib/log";
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   const sid = await createSessionRecord(user.id);
   await logEvent({ level: "info", event: "login_ok", path: "/api/login", userId: user.id });
-  const res = NextResponse.redirect(new URL("/", req.url), 303);
-  res.cookies.set(SESSION_COOKIE, sid, sessionCookieOptions());
-  return res;
+  // 인앱 브라우저(카카오톡 등)가 303 redirect 의 Set-Cookie 를 무시하는 문제 회피:
+  // 200 HTML 로 쿠키를 확정 저장한 뒤 즉시 이동.
+  return loginLandingResponse(sid, "/");
 }

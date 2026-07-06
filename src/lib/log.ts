@@ -56,6 +56,7 @@ export async function logEvent(input: LogInput): Promise<void> {
       isMobile: parsed.isMobile,
       hadSid: Boolean(store.get(SESSION_COOKIE)?.value),
       userId: input.userId ?? null,
+      ua: ua.slice(0, 400) || null,
     });
   } catch {
     // 무시: 진단 로그 실패가 실제 요청을 방해하지 않도록.

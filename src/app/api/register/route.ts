@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 import { getDb, getEnv } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { hashPassword } from "@/lib/auth";
-import { createSessionRecord, SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
+import { createSessionRecord } from "@/lib/session";
+import { loginLandingResponse } from "@/lib/authResponse";
 import { isValidPhone, normalizePhone } from "@/lib/phone";
 import { logEvent } from "@/lib/log";
 
@@ -61,7 +62,5 @@ export async function POST(req: NextRequest) {
 
   const sid = await createSessionRecord(inserted.id);
   await logEvent({ level: "info", event: "register_ok", path: "/api/register", userId: inserted.id });
-  const res = NextResponse.redirect(new URL("/", req.url), 303);
-  res.cookies.set(SESSION_COOKIE, sid, sessionCookieOptions());
-  return res;
+  return loginLandingResponse(sid, "/");
 }
