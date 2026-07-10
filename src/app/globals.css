@@ -416,6 +416,33 @@ h1 {
   padding: 40px 0;
 }
 
+/* 페이지네이션 */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+.pager-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+.pager-btn.disabled {
+  opacity: 0.4;
+}
+.pager-info {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* 이벤트 로그 레벨 */
 .log-level {
   font-weight: 700;

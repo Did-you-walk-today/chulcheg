@@ -1,24 +1,40 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { desc } from "drizzle-orm";
+import { count, desc } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/queries";
 import { getDb } from "@/lib/db";
 import { eventLog } from "@/lib/schema";
-import { formatDate, formatTime } from "@/lib/format";
+import { formatDate, formatTime, maskIp } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-export default async function LogsPage() {
+const PAGE_SIZE = 30;
+
+export default async function LogsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const me = await getCurrentUser();
   if (!me) redirect("/login");
   if (me.role !== "admin") redirect("/");
 
   const db = getDb();
+
+  const totalRow = await db.select({ n: count() }).from(eventLog).get();
+  const total = totalRow?.n ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const sp = await searchParams;
+  const page = Math.min(totalPages, Math.max(1, Number(sp.page) || 1));
+  const offset = (page - 1) * PAGE_SIZE;
+
   const rows = await db
     .select()
     .from(eventLog)
     .orderBy(desc(eventLog.createdAt))
-    .limit(200)
+    .limit(PAGE_SIZE)
+    .offset(offset)
     .all();
 
   return (
@@ -29,7 +45,9 @@ export default async function LogsPage() {
       </div>
 
       <h1>이벤트 로그</h1>
-      <p className="subtitle">최근 200건 · 로그인/세션·기기 정보</p>
+      <p className="subtitle">
+        총 {total}건 · {page}/{totalPages} 페이지 (30개씩)
+      </p>
 
       <div className="table-wrap">
         <table className="report-table">
@@ -72,7 +90,7 @@ export default async function LogsPage() {
                     {r.browserVer ? ` ${r.browserVer}` : ""}
                   </td>
                   <td>{r.isMobile ? "📱" : "💻"}</td>
-                  <td>{r.ip ?? "-"}</td>
+                  <td>{maskIp(r.ip)}</td>
                   <td>{r.country ?? "-"}</td>
                   <td>{r.isp ?? "-"}</td>
                   <td>{r.hadSid ? "있음" : "없음"}</td>
@@ -82,6 +100,26 @@ export default async function LogsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="pager">
+        {page > 1 ? (
+          <Link className="pager-btn" href={`/admin/logs?page=${page - 1}`}>
+            ← 이전
+          </Link>
+        ) : (
+          <span className="pager-btn disabled">← 이전</span>
+        )}
+        <span className="pager-info">
+          {page} / {totalPages}
+        </span>
+        {page < totalPages ? (
+          <Link className="pager-btn" href={`/admin/logs?page=${page + 1}`}>
+            다음 →
+          </Link>
+        ) : (
+          <span className="pager-btn disabled">다음 →</span>
+        )}
       </div>
     </div>
   );
