@@ -2,7 +2,14 @@ import "server-only";
 import { cookies } from "next/headers";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { getDb } from "./db";
-import { attendanceLogs, users, type AttendanceLog, type User } from "./schema";
+import {
+  announcements,
+  attendanceLogs,
+  users,
+  type AttendanceLog,
+  type Announcement,
+  type User,
+} from "./schema";
 import { getSessionUserId, SESSION_COOKIE } from "./session";
 import { logEvent } from "./log";
 
@@ -35,6 +42,24 @@ export async function getRecentLogs(
     .where(and(eq(attendanceLogs.userId, userId), gte(attendanceLogs.createdAt, since)))
     .orderBy(desc(attendanceLogs.createdAt))
     .all();
+}
+
+/** 가장 최근 공지 1건 (없으면 null). */
+export async function getLatestAnnouncement(): Promise<Announcement | null> {
+  const db = getDb();
+  const row = await db
+    .select()
+    .from(announcements)
+    .orderBy(desc(announcements.id))
+    .limit(1)
+    .get();
+  return row ?? null;
+}
+
+/** 전체 사용자 (이름 오름차순). 관리자 명단 화면용. */
+export async function getAllUsers(): Promise<User[]> {
+  const db = getDb();
+  return db.select().from(users).orderBy(users.name).all();
 }
 
 /** 전체 사용자 + 오늘 로그 (관리자 화면용). */

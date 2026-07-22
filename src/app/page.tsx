@@ -1,14 +1,19 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser, getRecentLogs } from "@/lib/queries";
+import {
+  getCurrentUser,
+  getLatestAnnouncement,
+  getRecentLogs,
+} from "@/lib/queries";
 import {
   ACTION_LABEL,
   STATE_LABEL,
   deriveState,
   todaysLogs,
 } from "@/lib/attendance";
-import { formatTime } from "@/lib/format";
+import { formatDate, formatTime } from "@/lib/format";
 import { recordAction } from "./actions";
 import { HeaderMenu } from "./HeaderMenu";
+import { Popups } from "./Popups";
 import { logEvent } from "@/lib/log";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +33,16 @@ export default async function DashboardPage({
     redirect("/login");
   }
 
+  const latestAnn = await getLatestAnnouncement();
+  const announcement =
+    latestAnn && latestAnn.id > user.seenAnnouncementId
+      ? {
+          id: latestAnn.id,
+          body: latestAnn.body,
+          dateLabel: formatDate(latestAnn.createdAt),
+        }
+      : null;
+
   const logs = await getRecentLogs(user.id, 2);
   const today = todaysLogs(logs);
   const state = deriveState(today);
@@ -39,6 +54,8 @@ export default async function DashboardPage({
 
   return (
     <>
+      <Popups announcement={announcement} needBirthdate={!user.birthdate} />
+
       <div className="topbar">
         <span className="brand">나왔니</span>
         <HeaderMenu isAdmin={user.role === "admin"} />

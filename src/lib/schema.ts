@@ -9,6 +9,17 @@ export const users = sqliteTable("users", {
   phone: text("phone").notNull().unique(), // 로그인 ID 겸 고유키
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("user"), // user | admin
+  birthdate: text("birthdate"), // YYYY-MM-DD. 미입력 시 null → 로그인 때 팝업 요청.
+  seenAnnouncementId: integer("seen_announcement_id").notNull().default(0), // 확인한 마지막 공지 id
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+});
+
+// 공지. admin 이 작성하면 모든 학생에게 팝업으로 1회 노출된다.
+export const announcements = sqliteTable("announcements", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  body: text("body").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -68,3 +79,4 @@ export type User = typeof users.$inferSelect;
 export type AttendanceLog = typeof attendanceLogs.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type EventLog = typeof eventLog.$inferSelect;
+export type Announcement = typeof announcements.$inferSelect;

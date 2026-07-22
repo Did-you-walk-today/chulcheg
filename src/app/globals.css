@@ -576,6 +576,85 @@ h1 {
   }
 }
 
+/* 팝업 모달 (공지 / 생일 조사) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(4, 8, 18, 0.72);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 22px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+.modal-cap {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+.modal-body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0 0 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.modal-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.modal-skip {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modal-skip:active {
+  color: var(--text);
+}
+
+/* 폼 안의 여러 줄 입력 */
+textarea.reason-input {
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.5;
+  font-family: inherit;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 28px 0 12px;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
 /* 차단 페이지 */
 .blocked {
   min-height: 100dvh;

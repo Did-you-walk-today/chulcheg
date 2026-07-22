@@ -63,6 +63,16 @@ export function HeaderMenu({ isAdmin }: { isAdmin: boolean }) {
             </Link>
           )}
           {isAdmin && (
+            <Link href="/admin/roster" className="menu-item" role="menuitem" onClick={close}>
+              학생 명단
+            </Link>
+          )}
+          {isAdmin && (
+            <Link href="/admin/announce" className="menu-item" role="menuitem" onClick={close}>
+              공지 작성
+            </Link>
+          )}
+          {isAdmin && (
             <Link href="/admin/logs" className="menu-item" role="menuitem" onClick={close}>
               이벤트 로그
             </Link>
