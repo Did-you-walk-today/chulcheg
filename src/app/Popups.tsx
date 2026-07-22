@@ -29,10 +29,20 @@ export function Popups({
           <div className="modal-cap">📢 공지</div>
           <p className="modal-body">{announcement!.body}</p>
           <div className="modal-meta">{announcement!.dateLabel}</div>
-          <form action={dismissAnnouncement} onSubmit={() => setAnnClosed(true)}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setAnnClosed(true)}
+          >
+            닫기
+          </button>
+          <form
+            action={dismissAnnouncement}
+            onSubmit={() => setAnnClosed(true)}
+          >
             <input type="hidden" name="id" value={announcement!.id} />
-            <button className="btn" type="submit">
-              확인했어요
+            <button className="modal-skip" type="submit">
+              다시 보지 않기
             </button>
           </form>
         </div>

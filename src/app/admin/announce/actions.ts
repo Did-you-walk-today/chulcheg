@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { announcements } from "@/lib/schema";
 import { getCurrentUser } from "@/lib/queries";
@@ -25,4 +26,21 @@ export async function createAnnouncement(formData: FormData): Promise<void> {
   revalidatePath("/admin/announce");
   revalidatePath("/");
   redirect("/admin/announce?ok=1");
+}
+
+/** 공지 삭제 (admin 전용). 삭제하면 더 이상 아무에게도 팝업으로 뜨지 않는다. */
+export async function deleteAnnouncement(formData: FormData): Promise<void> {
+  const me = await getCurrentUser();
+  if (!me) redirect("/login");
+  if (me.role !== "admin") redirect("/");
+
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id) || id <= 0) return;
+
+  const db = getDb();
+  await db.delete(announcements).where(eq(announcements.id, id));
+
+  revalidatePath("/admin/announce");
+  revalidatePath("/");
+  redirect("/admin/announce?deleted=1");
 }

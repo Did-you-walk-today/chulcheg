@@ -5,20 +5,20 @@ import { getCurrentUser } from "@/lib/queries";
 import { getDb } from "@/lib/db";
 import { announcements } from "@/lib/schema";
 import { formatDate, formatTime } from "@/lib/format";
-import { createAnnouncement } from "./actions";
+import { createAnnouncement, deleteAnnouncement } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AnnouncePage({
   searchParams,
 }: {
-  searchParams: Promise<{ ok?: string }>;
+  searchParams: Promise<{ ok?: string; deleted?: string }>;
 }) {
   const me = await getCurrentUser();
   if (!me) redirect("/login");
   if (me.role !== "admin") redirect("/");
 
-  const { ok } = await searchParams;
+  const { ok, deleted } = await searchParams;
 
   const db = getDb();
   const rows = await db
@@ -41,6 +41,7 @@ export default async function AnnouncePage({
       </p>
 
       {ok && <div className="toast">공지가 등록되었습니다. ✅</div>}
+      {deleted && <div className="toast">공지가 삭제되었습니다. 🗑️</div>}
 
       <form className="form" action={createAnnouncement}>
         <div className="field">
@@ -64,14 +65,23 @@ export default async function AnnouncePage({
       {rows.length === 0 ? (
         <div className="empty">등록된 공지가 없습니다.</div>
       ) : (
-        rows.map((a) => (
+        rows.map((a, i) => (
           <div className="log-item" key={a.id}>
             <div>
-              <div className="type">{a.body}</div>
+              <div className="type">
+                {i === 0 && <span className="ann-badge">현재 노출</span>}
+                {a.body}
+              </div>
               <div className="time" style={{ fontSize: 12 }}>
                 {formatDate(a.createdAt)} {formatTime(a.createdAt)}
               </div>
             </div>
+            <form action={deleteAnnouncement}>
+              <input type="hidden" name="id" value={a.id} />
+              <button type="submit" className="btn-delete">
+                삭제
+              </button>
+            </form>
           </div>
         ))
       )}
